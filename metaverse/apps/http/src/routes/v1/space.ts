@@ -1,31 +1,3 @@
-// import { Router } from "express";
-
-// export const spaceRouter = Router();
-
-// spaceRouter.post("/", (req, res) => {
-
-// })
-
-// spaceRouter.delete("/:spaceId", (req, res) => {
-    
-// })
-
-// spaceRouter.get("/all", (req, res) => {
-    
-// })
-
-// spaceRouter.post("/element", (req, res) => {
-    
-// })
-
-// spaceRouter.delete("/element", (req, res) => {
-    
-// })
-
-// spaceRouter.get("/:spaceId", (req, res) => {
-    
-// })
-
 import { Router } from "express";
 import client from "@repo/db/client";
 import { userMiddleware } from "../../middleware/user";
@@ -68,9 +40,12 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
         res.status(400).json({message: "Map not found"})
         return
     }
+
     console.log("map.mapElements.length")
     console.log(map.mapElements.length)
-    let space = await client.$transaction(async () => {
+    
+    let space = client.$transaction(async () => {
+    await client.$transaction(async() => {
         const space = await client.space.create({
             data: {
                 name: parsedData.data.name,
@@ -81,7 +56,7 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
         });
 
         await client.spaceElements.createMany({
-            data: map.mapElements.map(e => ({
+            data : map.mapElements.map(e => ({
                 spaceId: space.id,
                 elementId: e.elementId,
                 x: e.x!,
@@ -90,10 +65,8 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
         })
 
         return space;
+    } )
 
-    })
-    console.log("space crated")
-    res.json({spaceId: space.id})
 })
 
 
@@ -211,37 +184,38 @@ spaceRouter.post("/element", userMiddleware, async (req, res) => {
 })
 
 spaceRouter.get("/:spaceId",async (req, res) => {
-    // const space = await client.space.findUnique({
-    //     where: {
-    //         id: req.params.spaceId
-    //     },
-    //     include: {
-    //         elements: {
-    //             include: {
-    //                 element: true
-    //             }
-    //         },
-    //     }
-    // })
+    const space = await client.space.findUnique({
+        where: {
+            id: req.params.spaceId
+        },
+        include: {
+            elements: {
+                include: {
+                    element: true
+                }
+            },
+        }
+    })
 
-    // if (!space) {
-    //     res.status(400).json({message: "Space not found"})
-    //     return
-    // }
+    if (!space) {
+        res.status(400).json({message: "Space not found"})
+        return
+    }
 
-    // res.json({
-    //     "dimensions": `${space.width}x${space.height}`,
-    //     elements: space.elements.map(e => ({
-    //         id: e.id,
-    //         element: {
-    //             id: e.element.id,
-    //             imageUrl: e.element.imageUrl,
-    //             width: e.element.width,
-    //             height: e.element.height,
-    //             static: e.element.static
-    //         },
-    //         x: e.x,
-    //         y: e.y
-    //     })),
-    // })
+    res.json({
+        "dimensions": `${space.width}x${space.height}`,
+        elements: space.elements.map(e => ({
+            id: e.id,
+            element: {
+                id: e.element.id,
+                imageUrl: e.element.imageUrl,
+                width: e.element.width,
+                height: e.element.height,
+                static: e.element.static
+            },
+            x: e.x,
+            y: e.y
+        })),
+    })
+})
 })

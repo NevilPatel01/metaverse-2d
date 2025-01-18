@@ -24,7 +24,9 @@ Ensure you have the following installed:
 ### Installation
 
 1. **Clone the Repository**:
-`git clone https://github.com/NevilPatel01/metaverse-2d`
+```bash
+git clone https://github.com/NevilPatel01/metaverse-2d
+```
 
 #### Navigate to project folder
 `cd metaverse`
