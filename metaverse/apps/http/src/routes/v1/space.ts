@@ -40,12 +40,9 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
         res.status(400).json({message: "Map not found"})
         return
     }
-
     console.log("map.mapElements.length")
     console.log(map.mapElements.length)
-    
-    let space = client.$transaction(async () => {
-    await client.$transaction(async() => {
+    let space = await client.$transaction(async () => {
         const space = await client.space.create({
             data: {
                 name: parsedData.data.name,
@@ -56,7 +53,7 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
         });
 
         await client.spaceElements.createMany({
-            data : map.mapElements.map(e => ({
+            data: map.mapElements.map(e => ({
                 spaceId: space.id,
                 elementId: e.elementId,
                 x: e.x!,
@@ -65,8 +62,10 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
         })
 
         return space;
-    } )
 
+    })
+    console.log("space crated")
+    res.json({spaceId: space.id})
 })
 
 
@@ -217,5 +216,4 @@ spaceRouter.get("/:spaceId",async (req, res) => {
             y: e.y
         })),
     })
-})
 })
